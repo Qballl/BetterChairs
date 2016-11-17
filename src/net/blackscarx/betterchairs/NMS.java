@@ -1,14 +1,14 @@
 /*
  * Copyright (c) BlackScarx
  */
-
 package net.blackscarx.betterchairs;
 
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 
-public interface NMS {
+public interface NMS
+{
 
     String getVersion();
 

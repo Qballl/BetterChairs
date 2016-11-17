@@ -1,12 +1,12 @@
 /*
  * Copyright (c) BlackScarx
  */
-
 package net.blackscarx.betterchairs;
 
 import net.blackscarx.betterchairs.Files.Config;
 import net.blackscarx.betterchairs.Files.Messages;
 import net.blackscarx.betterchairs.NMSManager.NMS_V1_10_R1.v1_10_R1;
+import net.blackscarx.betterchairs.NMSManager.NMS_V1_11_R1.v1_11_R1;
 import net.blackscarx.betterchairs.NMSManager.NMS_v1_8_R1.v1_8_R1;
 import net.blackscarx.betterchairs.NMSManager.NMS_v1_8_R2.v1_8_R2;
 import net.blackscarx.betterchairs.NMSManager.NMS_v1_8_R3.v1_8_R3;
@@ -44,7 +44,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
-public class ChairsPlugin extends JavaPlugin implements Listener {
+public class ChairsPlugin extends JavaPlugin implements Listener
+{
 
     public static Map<Integer, ChairsConf> list = new HashMap<>();
     public static NMS nms;
@@ -54,15 +55,20 @@ public class ChairsPlugin extends JavaPlugin implements Listener {
     public List<UUID> disableList = new ArrayList<>();
     public List<UUID> uuidList = new ArrayList<>();
 
-    public static NMS getNMS() {
+    public static NMS getNMS()
+    {
         return nms;
     }
 
     @Override
-    public void onEnable() {
-        if (setUpNms()) {
+    public void onEnable()
+    {
+        if (setUpNms())
+        {
             getLogger().info("NMS hooked !");
-        } else {
+        }
+        else
+        {
             getLogger().severe("Failed to setup nms !");
             getLogger().severe("Your server version is not compatible with this plugin!");
             Bukkit.getPluginManager().disablePlugin(this);
@@ -82,8 +88,10 @@ public class ChairsPlugin extends JavaPlugin implements Listener {
         new SlabBlock(Material.WOOD_STEP, (short) 4, "acacia_wood_slab");
         new SlabBlock(Material.WOOD_STEP, (short) 5, "dark_oak_wood_slab");
         new SlabBlock(Material.STONE_SLAB2, (short) 0, "red_sandstone_slab");
-        if (nms.getVersion().equals("v1_9_R1") || nms.getVersion().equals("v1_10_R1"))
+        if (nms.getVersion().equals("v1_9_R1") || nms.getVersion().equals("v1_10_R1") || nms.getVersion().equals("v1_11_R1"))
+        {
             new SlabBlock(Material.PURPUR_SLAB, (short) 0, "purpur_slab");
+        }
         Config.init();
         Messages.init();
         getCommand("betterchairsreload").setExecutor(new CmdReload());
@@ -93,32 +101,44 @@ public class ChairsPlugin extends JavaPlugin implements Listener {
         plugin = this;
         PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(this, this);
-        if (Config.getConfig().getBoolean("Update Checker", true)) {
+        if (Config.getConfig().getBoolean("Update Checker", true))
+        {
             pm.registerEvents(um, this);
             isRegister = true;
         }
-        try {
+        try
+        {
             Metrics metrics = new Metrics(this);
             metrics.start();
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             e.printStackTrace();
         }
     }
 
     /**
      * Set the nms version
+     *
      * @return nms
      */
-
-    private Boolean setUpNms() {
+    private Boolean setUpNms()
+    {
         String version;
-        try {
+        try
+        {
             version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
-        } catch (ArrayIndexOutOfBoundsException whatVersionAreYouUsingException) {
+        }
+        catch (ArrayIndexOutOfBoundsException whatVersionAreYouUsingException)
+        {
             return false;
         }
         getLogger().info("Your server is running version " + version);
-        switch (version) {
+        switch (version)
+        {
+            case "v1_11_R1":
+                nms = new v1_11_R1();
+                break;
             case "v1_10_R1":
                 nms = new v1_10_R1();
                 break;
@@ -142,8 +162,10 @@ public class ChairsPlugin extends JavaPlugin implements Listener {
     }
 
     @Override
-    public void onDisable() {
-        for (ChairsConf cc : list.values()) {
+    public void onDisable()
+    {
+        for (ChairsConf cc : list.values())
+        {
             Player p = cc.getP();
             p.teleport(cc.getLoc());
         }
@@ -151,97 +173,138 @@ public class ChairsPlugin extends JavaPlugin implements Listener {
 
     /**
      * Sit the player on stairs
+     *
      * @param e
      */
-
     @EventHandler
-    public void spawnStairs(PlayerInteractEvent e) {
+    public void spawnStairs(PlayerInteractEvent e)
+    {
         Player p = e.getPlayer();
         //Check if the player have chairs disable
         if (disableList.contains(p.getUniqueId()))
+        {
             return;
+        }
         //Check if the action is right click
         if (!e.getAction().equals(Action.RIGHT_CLICK_BLOCK))
+        {
             return;
+        }
         //Get the clicked block
         Block b = e.getClickedBlock();
         //Check if the block is a Stairs
         if (!(b.getState().getData() instanceof Stairs))
+        {
             return;
+        }
         //Check if the stairs face down
         if (b.getState().getData().toItemStack().getDurability() > 3)
+        {
             return;
+        }
         //Check if the stairs if the stairs is valide
         if (StairsBlock.from(b.getType()) == null)
+        {
             return;
+        }
         //Check if the stairs is enable
         if (!getConfig().getStringList("Enable Stairs Block").contains(StairsBlock.from(b.getType())))
+        {
             return;
+        }
         //Check if the player sneak
         if (p.isSneaking())
+        {
             return;
+        }
         //Check if the config use sign or stairs
-        if (Config.getConfig().getBoolean("Need to sign or chair on each side")) {
+        if (Config.getConfig().getBoolean("Need to sign or chair on each side"))
+        {
             short data = b.getState().getData().toItemStack().getDurability();
             Block right = b.getRelative(data == 0 ? BlockFace.SOUTH : data == 1 ? BlockFace.NORTH : data == 2 ? BlockFace.WEST : BlockFace.EAST);
             Block left = b.getRelative(data == 0 ? BlockFace.NORTH : data == 1 ? BlockFace.SOUTH : data == 2 ? BlockFace.EAST : BlockFace.WEST);
-            if (!((right.getType().equals(Material.WALL_SIGN) || getConfig().getStringList("Enable Stairs Block").contains(StairsBlock.from(right.getType()))) && (left.getType().equals(Material.WALL_SIGN) || getConfig().getStringList("Enable Stairs Block").contains(StairsBlock.from(left.getType()))))) {
-                if (getConfig().getBoolean("Send message if the Chairs need sign or chair", false)) {
+            if (!((right.getType().equals(Material.WALL_SIGN) || getConfig().getStringList("Enable Stairs Block").contains(StairsBlock.from(right.getType()))) && (left.getType().equals(Material.WALL_SIGN) || getConfig().getStringList("Enable Stairs Block").contains(StairsBlock.from(left.getType())))))
+            {
+                if (getConfig().getBoolean("Send message if the Chairs need sign or chair", false))
+                {
                     p.sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.getConfig().getString("Message to send if the chairs need sign or chair", "&cIf you want to sit on this stairs you need to place a sign or stairs on each side")));
                 }
                 return;
             }
         }
         //Check no item in hand
-        if (getConfig().getBoolean("No item in hand")) {
-            if (!(nms.getVersion().equals("v1_9_R1") || nms.getVersion().equals("v1_9_R2") || nms.getVersion().equals("v1_10_R1"))) {
+        if (getConfig().getBoolean("No item in hand"))
+        {
+            if (!(nms.getVersion().equals("v1_9_R1") || nms.getVersion().equals("v1_9_R2") || nms.getVersion().equals("v1_10_R1") || nms.getVersion().equals("v1_11_R1")))
+            {
                 if (p.getItemInHand().getType() != Material.AIR)
+                {
                     return;
-            } else {
-                if (p.getInventory().getItemInMainHand().getType() != Material.AIR || p.getInventory().getItemInOffHand().getType() != Material.AIR)
-                    return;
-
+                }
+            }
+            else if (p.getInventory().getItemInMainHand().getType() != Material.AIR || p.getInventory().getItemInOffHand().getType() != Material.AIR)
+            {
+                return;
             }
         }
         e.setCancelled(true);
         //Check if the plugin use permission for sit
-        if (Config.getConfig().getBoolean("Use permission for sit", false)) {
-            if (!p.hasPermission("betterchairs.use")) {
+        if (Config.getConfig().getBoolean("Use permission for sit", false))
+        {
+            if (!p.hasPermission("betterchairs.use"))
+            {
                 if (!uuidList.contains(p.getUniqueId()))
+                {
                     p.sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.getConfig().getString("Cant use message")));
+                }
                 uuidList.add(p.getUniqueId());
                 final Player pf = p;
-                new BukkitRunnable() {
+                new BukkitRunnable()
+                {
                     @Override
-                    public void run() {
+                    public void run()
+                    {
                         if (uuidList.contains(pf.getUniqueId()))
+                        {
                             uuidList.remove(pf.getUniqueId());
+                        }
                     }
                 }.runTaskLater(this, 2L);
                 return;
             }
         }
         //Check if the world is valid
-        if(!isValidWorld(p))
+        if (!isValidWorld(p))
+        {
             return;
+        }
         Location loc = b.getLocation().add(0.5, -1.2, 0.5);
         //Check the distance of the chairs
         if (p.getLocation().distance(b.getLocation().add(0.5, 0, 0.5)) >= Config.getConfig().getDouble("Distance of the stairs", 2.0))
+        {
             return;
+        }
         //Check if the block is used by another player
-        if (ChairsConf.isUsed(b.getState())) {
+        if (ChairsConf.isUsed(b.getState()))
+        {
             if (Config.getConfig().getBoolean("Send message if the chairs is already occupied", false))
+            {
                 p.sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.getConfig().getString("Message to send if the chairs is occupied")));
+            }
             return;
         }
         //Check if the player is already sit
         if (ChairsConf.isSit(p))
+        {
             return;
+        }
         Location pLoc = p.getLocation();
         //Check auto turn
-        if (Config.getConfig().getBoolean("AutoTurn", true)) {
+        if (Config.getConfig().getBoolean("AutoTurn", true))
+        {
             short data = b.getState().getData().toItemStack().getDurability();
-            switch (data) {
+            switch (data)
+            {
                 case 0:
                     p.teleport(new Location(p.getWorld(), p.getLocation().getX(), p.getLocation().getY(), p.getLocation().getZ(), 90f, 0f));
                     loc.setYaw(90f);
@@ -266,16 +329,23 @@ public class ChairsPlugin extends JavaPlugin implements Listener {
         ArmorStand stand = nms.spawn(loc, p);
         //Add the armorstand and the ChairsConf in the list
         list.put(getEntityId(stand), new ChairsConf(b.getState(), p, pLoc));
-        if (Config.getConfig().getBoolean("Send message when player sit", false)) {
+        if (Config.getConfig().getBoolean("Send message when player sit", false))
+        {
             if (!uuidList.contains(p.getUniqueId()))
+            {
                 p.sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.getConfig().getString("Message to send when player sit", "&aYou are now sitting. Take a break.")));
+            }
             uuidList.add(p.getUniqueId());
             final Player pf = p;
-            new BukkitRunnable() {
+            new BukkitRunnable()
+            {
                 @Override
-                public void run() {
+                public void run()
+                {
                     if (uuidList.contains(pf.getUniqueId()))
+                    {
                         uuidList.remove(pf.getUniqueId());
+                    }
                 }
             }.runTaskLater(this, 2L);
         }
@@ -283,86 +353,133 @@ public class ChairsPlugin extends JavaPlugin implements Listener {
 
     /**
      * Sit the player on slab
+     *
      * @param e
      */
-
     @EventHandler
-    public void slabSpawn(PlayerInteractEvent e) {
+    public void slabSpawn(PlayerInteractEvent e)
+    {
         //Same of chairsSpawn but for slab
         Player p = e.getPlayer();
         if (disableList.contains(p.getUniqueId()))
+        {
             return;
+        }
         if (!e.getAction().equals(Action.RIGHT_CLICK_BLOCK))
+        {
             return;
+        }
         if (!getConfig().getBoolean("Use slab"))
+        {
             return;
+        }
         Block b = e.getClickedBlock();
         SlabBlock slabBlock = null;
-        for (SlabBlock slab : SlabBlock.getList()) {
+        for (SlabBlock slab : SlabBlock.getList())
+        {
             if (!slab.getType().equals(b.getType()))
+            {
                 continue;
+            }
             if (!slab.getData().equals(b.getState().getData().toItemStack().getDurability()))
+            {
                 continue;
+            }
             slabBlock = slab;
             break;
         }
         if (slabBlock == null)
+        {
             return;
+        }
         if (!getConfig().getStringList("Enable Slab Block").contains(slabBlock.getName()))
+        {
             return;
+        }
         if (p.isSneaking())
+        {
             return;
-        if (getConfig().getBoolean("No item in hand")) {
-            if (!(nms.getVersion().equals("v1_9_R1") || nms.getVersion().equals("v1_9_R2") || nms.getVersion().equals("v1_10_R1"))) {
+        }
+        if (getConfig().getBoolean("No item in hand"))
+        {
+            if (!(nms.getVersion().equals("v1_9_R1") || nms.getVersion().equals("v1_9_R2") || nms.getVersion().equals("v1_10_R1") || nms.getVersion().equals("v1_11_R1")))
+            {
                 if (p.getItemInHand().getType() != Material.AIR)
+                {
                     return;
-            } else {
-                if (p.getInventory().getItemInMainHand().getType() != Material.AIR || p.getInventory().getItemInOffHand().getType() != Material.AIR)
-                    return;
+                }
+            }
+            else if (p.getInventory().getItemInMainHand().getType() != Material.AIR || p.getInventory().getItemInOffHand().getType() != Material.AIR)
+            {
+                return;
             }
         }
         e.setCancelled(true);
-        if (Config.getConfig().getBoolean("Use permission for sit", false)) {
-            if (!p.hasPermission("betterchairs.use")) {
+        if (Config.getConfig().getBoolean("Use permission for sit", false))
+        {
+            if (!p.hasPermission("betterchairs.use"))
+            {
                 if (!uuidList.contains(p.getUniqueId()))
+                {
                     p.sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.getConfig().getString("Cant use message")));
+                }
                 uuidList.add(p.getUniqueId());
                 final Player pf = p;
-                new BukkitRunnable() {
+                new BukkitRunnable()
+                {
                     @Override
-                    public void run() {
+                    public void run()
+                    {
                         if (uuidList.contains(pf.getUniqueId()))
+                        {
                             uuidList.remove(pf.getUniqueId());
+                        }
                     }
                 }.runTaskLater(this, 2L);
                 return;
             }
         }
         if (!isValidWorld(p))
+        {
             return;
+        }
         Location loc = b.getLocation().add(0.5, -1.2, 0.5);
         if (p.getLocation().distance(b.getLocation().add(0.5, 0, 0.5)) >= Config.getConfig().getDouble("Distance of the stairs", 2.0))
+        {
             return;
-        if (ChairsConf.isUsed(b.getState())) {
+        }
+        if (ChairsConf.isUsed(b.getState()))
+        {
             if (Config.getConfig().getBoolean("Send message if the chairs is already occupied", false))
+            {
                 p.sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.getConfig().getString("Message to send if the chairs is occupied")));
+            }
             return;
         }
         if (ChairsConf.isSit(p))
+        {
             return;
+        }
         Location pLoc = p.getLocation();
         ArmorStand stand = nms.spawn(loc, p);
         list.put(getEntityId(stand), new ChairsConf(b.getState(), p, pLoc));
-        if (Config.getConfig().getBoolean("Send message when player sit", false)) {
+        if (Config.getConfig().getBoolean("Send message when player sit", false))
+        {
             if (!uuidList.contains(p.getUniqueId()))
+            {
                 p.sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.getConfig().getString("Message to send when player sit", "&aYou are now sitting. Take a break.")));
+            }
             uuidList.add(p.getUniqueId());
             final Player pf = p;
-            new BukkitRunnable() {
+            new BukkitRunnable()
+            {
                 @Override
-                public void run() {
+                public void run()
+                {
                     if (uuidList.contains(pf.getUniqueId()))
+                    {
                         uuidList.remove(pf.getUniqueId());
+                    }
                 }
             }.runTaskLater(this, 2L);
         }
@@ -370,22 +487,31 @@ public class ChairsPlugin extends JavaPlugin implements Listener {
 
     /**
      * Check if the world is in the config
+     *
      * @param p
      * @return boolean
      */
-
-    private boolean isValidWorld(Player p) {
-        if (Config.getConfig().getStringList("Disable world").contains(p.getWorld().getName())) {
-            if (Config.getConfig().getBoolean("Send message if the word is disable", false)) {
+    private boolean isValidWorld(Player p)
+    {
+        if (Config.getConfig().getStringList("Disable world").contains(p.getWorld().getName()))
+        {
+            if (Config.getConfig().getBoolean("Send message if the word is disable", false))
+            {
                 if (!uuidList.contains(p.getUniqueId()))
+                {
                     p.sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.getConfig().getString("Message to send if the word is disable", "&cThe Chairs is not enable in this world")));
+                }
                 uuidList.add(p.getUniqueId());
                 final Player pf = p;
-                new BukkitRunnable() {
+                new BukkitRunnable()
+                {
                     @Override
-                    public void run() {
+                    public void run()
+                    {
                         if (uuidList.contains(pf.getUniqueId()))
+                        {
                             uuidList.remove(pf.getUniqueId());
+                        }
                     }
                 }.runTaskLater(this, 2L);
             }
@@ -396,67 +522,85 @@ public class ChairsPlugin extends JavaPlugin implements Listener {
 
     /**
      * Cancel the break of the chairs
+     *
      * @param e
      */
-
     @EventHandler
-    public void blockBreak(BlockBreakEvent e) {
+    public void blockBreak(BlockBreakEvent e)
+    {
         if (ChairsConf.isUsed(e.getBlock().getState()))
+        {
             e.setCancelled(true);
+        }
     }
 
     /**
      * Override the spawn of the ArmorStand
+     *
      * @param e
      */
-
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onSpawn(EntitySpawnEvent e) {
+    public void onSpawn(EntitySpawnEvent e)
+    {
         if (!(e.getEntity() instanceof ArmorStand))
+        {
             return;
+        }
         ArmorStand entity = (ArmorStand) e.getEntity();
-        if (nms.check(entity)) {
+        if (nms.check(entity))
+        {
             e.setCancelled(false);
         }
     }
 
     /**
      * Override the spawn of the ArmorStand
+     *
      * @param e
      */
-
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onSpawn2(CreatureSpawnEvent e) {
+    public void onSpawn2(CreatureSpawnEvent e)
+    {
         if (!(e.getEntity() instanceof ArmorStand))
+        {
             return;
+        }
         ArmorStand entity = (ArmorStand) e.getEntity();
-        if (nms.check(entity)) {
+        if (nms.check(entity))
+        {
             e.setCancelled(false);
         }
     }
 
     /**
      * Teleport fixer
+     *
      * @param e
      */
-
     @EventHandler
-    public void onTeleport(PlayerTeleportEvent e) {
+    public void onTeleport(PlayerTeleportEvent e)
+    {
         Location loc = e.getTo();
         Collection<Entity> list = getNearbyEntities(loc, 0.1, 0.1, 0.1);
-        for (Entity ent : list) {
-            if (ent instanceof Player) {
+        for (Entity ent : list)
+        {
+            if (ent instanceof Player)
+            {
                 Player targetPlayer = (Player) ent;
-                if (ChairsConf.isSit(targetPlayer)) {
+                if (ChairsConf.isSit(targetPlayer))
+                {
                     e.setTo(loc.add(0, 1, 0));
                     break;
                 }
             }
         }
-        if (ChairsConf.isSit(e.getPlayer())) {
-            if (e.getPlayer().getVehicle() instanceof ArmorStand) {
+        if (ChairsConf.isSit(e.getPlayer()))
+        {
+            if (e.getPlayer().getVehicle() instanceof ArmorStand)
+            {
                 ArmorStand armorStand = (ArmorStand) e.getPlayer().getVehicle();
-                if (nms.check(armorStand)) {
+                if (nms.check(armorStand))
+                {
                     ChairsPlugin.list.remove(getEntityId(armorStand));
                     nms.kill(armorStand);
                 }
@@ -466,38 +610,50 @@ public class ChairsPlugin extends JavaPlugin implements Listener {
 
     /**
      * get nearbies entity because the method don't exist in 1.8
+     *
      * @param loc
      * @param x
      * @param y
      * @param z
      * @return list
      */
-
-    private Collection<Entity> getNearbyEntities(Location loc, double x, double y, double z) {
+    private Collection<Entity> getNearbyEntities(Location loc, double x, double y, double z)
+    {
         List<Entity> list = loc.getWorld().getEntities();
         Collection<Entity> finalColl = new ArrayList<>();
-        for (Entity e : list) {
+        for (Entity e : list)
+        {
             Location l = e.getLocation();
             if (loc.getX() - x < l.getX() && loc.getX() + x > l.getX())
+            {
                 if (loc.getY() - y < l.getY() && loc.getY() + y > l.getY())
+                {
                     if (loc.getZ() - z < l.getZ() && loc.getZ() + z > l.getZ())
+                    {
                         finalColl.add(e);
+                    }
+                }
+            }
         }
         return finalColl;
     }
 
     /**
      * remove chairs if the player is sit on disconnect
+     *
      * @param e
      */
-
     @EventHandler(priority = EventPriority.LOWEST)
-    public void quit(PlayerQuitEvent e) {
+    public void quit(PlayerQuitEvent e)
+    {
         Player p = e.getPlayer();
-        if (ChairsConf.isSit(p)) {
-            if (p.getVehicle() != null) {
+        if (ChairsConf.isSit(p))
+        {
+            if (p.getVehicle() != null)
+            {
                 Integer id = getEntityId(p.getVehicle());
-                if (list.containsKey(id)) {
+                if (list.containsKey(id))
+                {
                     ChairsConf cc = list.get(id);
                     p.teleport(cc.getLoc());
                     list.remove(id);
@@ -508,38 +664,48 @@ public class ChairsPlugin extends JavaPlugin implements Listener {
 
     /**
      * Cancel the push of the chairs
+     *
      * @param e
      */
-
     @EventHandler
-    public void pistonExtend(BlockPistonExtendEvent e) {
-        for (Block b : e.getBlocks()) {
+    public void pistonExtend(BlockPistonExtendEvent e)
+    {
+        for (Block b : e.getBlocks())
+        {
             if (ChairsConf.isUsed(b.getState()))
+            {
                 e.setCancelled(true);
+            }
         }
     }
 
     /**
      * Cancel the push of the chairs
+     *
      * @param e
      */
-
     @EventHandler
-    public void pistonRetract(BlockPistonRetractEvent e) {
-        for (Block b : e.getBlocks()) {
+    public void pistonRetract(BlockPistonRetractEvent e)
+    {
+        for (Block b : e.getBlocks())
+        {
             if (ChairsConf.isUsed(b.getState()))
+            {
                 e.setCancelled(true);
+            }
         }
     }
 
     /**
      * Because method don't exist in 1.8
+     *
      * @param i
      * @return
      */
-
-    public Integer getEntityId(Entity i) {
-        try {
+    public Integer getEntityId(Entity i)
+    {
+        try
+        {
             Class<?> CraftEntity = Class.forName("org.bukkit.craftbukkit." + nms.getVersion() + ".entity.CraftEntity");
             Class<?> EntityNMS = Class.forName("net.minecraft.server." + nms.getVersion() + ".Entity");
             Method getHandle = CraftEntity.getDeclaredMethod("getHandle");
@@ -551,7 +717,9 @@ public class ChairsPlugin extends JavaPlugin implements Listener {
             getId.setAccessible(false);
             getHandle.setAccessible(false);
             return id;
-        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+        }
+        catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
+        {
             e.printStackTrace();
         }
         return null;
@@ -560,24 +728,27 @@ public class ChairsPlugin extends JavaPlugin implements Listener {
     /**
      * Command for reload the config
      */
-
-    public class CmdReload implements CommandExecutor {
+    public class CmdReload implements CommandExecutor
+    {
 
         @Override
-        public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
+        public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings)
+        {
             Config.reload();
             reloadConfig();
             Messages.init();
-            if (Config.getConfig().getBoolean("Update Checker", true)) {
-                if (!isRegister) {
+            if (Config.getConfig().getBoolean("Update Checker", true))
+            {
+                if (!isRegister)
+                {
                     Bukkit.getPluginManager().registerEvents(um, plugin);
                     isRegister = true;
                 }
-            } else {
-                if (isRegister) {
-                    HandlerList.unregisterAll(um);
-                    isRegister = false;
-                }
+            }
+            else if (isRegister)
+            {
+                HandlerList.unregisterAll(um);
+                isRegister = false;
             }
             commandSender.sendMessage(ChatColor.GREEN + "[BC] Reload successful !");
             return true;
@@ -587,17 +758,24 @@ public class ChairsPlugin extends JavaPlugin implements Listener {
     /**
      * Command for toggle chairs
      */
+    public class ChairsToggle implements CommandExecutor
+    {
 
-    public class ChairsToggle implements CommandExecutor {
         @Override
-        public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
+        public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings)
+        {
             if (!(commandSender instanceof Player))
+            {
                 return true;
+            }
             Player p = (Player) commandSender;
-            if (disableList.contains(p.getUniqueId())) {
+            if (disableList.contains(p.getUniqueId()))
+            {
                 disableList.remove(p.getUniqueId());
                 p.sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.getConfig().getString("Message to send when player toggle chairs to on", "&aYou can sit now")));
-            } else {
+            }
+            else
+            {
                 disableList.add(p.getUniqueId());
                 p.sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.getConfig().getString("Message to send when player toggle chairs to off", "&cYou can't sit now")));
             }
@@ -608,14 +786,20 @@ public class ChairsPlugin extends JavaPlugin implements Listener {
     /**
      * Reset the chairs
      */
+    private class ChairsReset implements CommandExecutor
+    {
 
-    private class ChairsReset implements CommandExecutor {
         @Override
-        public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-            for (World world : Bukkit.getWorlds()) {
-                for (Entity entity : world.getEntities()) {
-                    if (entity instanceof ArmorStand) {
-                        if (nms.check((ArmorStand) entity)) {
+        public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
+        {
+            for (World world : Bukkit.getWorlds())
+            {
+                for (Entity entity : world.getEntities())
+                {
+                    if (entity instanceof ArmorStand)
+                    {
+                        if (nms.check((ArmorStand) entity))
+                        {
                             nms.kill((ArmorStand) entity);
                         }
                     }

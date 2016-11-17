@@ -1,7 +1,6 @@
 /*
  * Copyright (c) BlackScarx
  */
-
 package net.blackscarx.betterchairs.NMSManager.NMS_v1_9_R1;
 
 import net.blackscarx.betterchairs.ChairsConf;
@@ -17,15 +16,18 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-public class CustomArmorStand_9_R1 extends EntityArmorStand {
+public class CustomArmorStand_9_R1 extends EntityArmorStand
+{
 
     private boolean protect = true;
 
-    public CustomArmorStand_9_R1(World world) {
+    public CustomArmorStand_9_R1(World world)
+    {
         super(world);
     }
 
-    public static ArmorStand spawn(Location location, Player p) {
+    public static ArmorStand spawn(Location location, Player p)
+    {
         World mcWorld = ((CraftWorld) location.getWorld()).getHandle();
 
         CustomArmorStand_9_R1 customEntity = new CustomArmorStand_9_R1(mcWorld);
@@ -49,9 +51,14 @@ public class CustomArmorStand_9_R1 extends EntityArmorStand {
         return (ArmorStand) customEntity.getBukkitEntity();
     }
 
-    public void g(float f, float f1) {
-        if (shouldDie(this)) return;
-        if (this.passengers.get(0) != null && this.passengers.get(0) instanceof EntityHuman) {
+    public void g(float f, float f1)
+    {
+        if (shouldDie(this))
+        {
+            return;
+        }
+        if (this.passengers.get(0) != null && this.passengers.get(0) instanceof EntityHuman)
+        {
             this.lastYaw = this.yaw = this.passengers.get(0).yaw;
             this.pitch = passengers.get(0).pitch * 0.5F;
             this.setYawPitch(this.yaw, this.pitch);
@@ -59,22 +66,30 @@ public class CustomArmorStand_9_R1 extends EntityArmorStand {
         }
     }
 
-    public void die() {
+    public void die()
+    {
         if (!protect)
+        {
             dead = true;
+        }
     }
 
-    public void killArmorStand() {
+    public void killArmorStand()
+    {
         protect = false;
         dead = true;
     }
 
-    private boolean shouldDie(CustomArmorStand_9_R1 mount) {
-        if (mount.passengers.size() == 0 || !(mount.passengers.get(0) instanceof EntityHuman)) {
-            if (ChairsPlugin.list.containsKey(mount.getId())) {
+    private boolean shouldDie(CustomArmorStand_9_R1 mount)
+    {
+        if (mount.passengers.size() == 0 || !(mount.passengers.get(0) instanceof EntityHuman))
+        {
+            if (ChairsPlugin.list.containsKey(mount.getId()))
+            {
                 ChairsConf chairsConf = ChairsPlugin.list.get(mount.getId());
                 Player p = chairsConf.getP();
-                if (p != null) {
+                if (p != null)
+                {
                     p.teleport(chairsConf.getLoc());
                 }
                 ChairsPlugin.list.remove(mount.getId());
@@ -82,21 +97,35 @@ public class CustomArmorStand_9_R1 extends EntityArmorStand {
             protect = false;
             mount.die();
             return true;
-        } else if (Config.getConfig().getBoolean("Regen when sit", false)) {
+        }
+        else if (Config.getConfig().getBoolean("Regen when sit", false))
+        {
             EntityPlayer p = (EntityPlayer) mount.passengers.get(0);
             if (Config.getConfig().getBoolean("Regen need permission", false))
+            {
                 if (!p.getBukkitEntity().hasPermission("betterchairs.regen"))
+                {
                     return false;
+                }
+            }
             PotionEffect potion = new PotionEffect(PotionEffectType.REGENERATION, 60, Config.getConfig().getInt("Amplifier", 1) - 1, false, false);
-            if (p.getBukkitEntity().getActivePotionEffects() != null) {
+            if (p.getBukkitEntity().getActivePotionEffects() != null)
+            {
                 boolean regen = false;
-                for (PotionEffect popo : p.getBukkitEntity().getActivePotionEffects()) {
+                for (PotionEffect popo : p.getBukkitEntity().getActivePotionEffects())
+                {
                     if (popo.getType().equals(PotionEffectType.REGENERATION))
+                    {
                         regen = true;
+                    }
                 }
                 if (!regen)
+                {
                     p.getBukkitEntity().addPotionEffect(potion);
-            } else {
+                }
+            }
+            else
+            {
                 p.getBukkitEntity().addPotionEffect(potion);
             }
         }

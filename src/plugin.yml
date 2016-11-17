@@ -1,7 +1,7 @@
 main: net.blackscarx.betterchairs.ChairsPlugin
 name: BetterChairs
-version: 0.8.8
-author: BlackScarx
+version: 1.0
+authors: [BlackScarx, HyperMayo]
 commands:
   betterchairsreload:
     aliases: [bcreload, bcr]

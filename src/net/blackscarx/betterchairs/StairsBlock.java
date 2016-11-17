@@ -1,12 +1,12 @@
 /*
  * Copyright (c) BlackScarx
  */
-
 package net.blackscarx.betterchairs;
 
 import org.bukkit.Material;
 
-public enum StairsBlock {
+public enum StairsBlock
+{
 
     ACACIA("acacia_stairs"),
     BIRCH_WOOD("birch_wood_stairs"),
@@ -25,20 +25,25 @@ public enum StairsBlock {
 
     final private String name;
 
-    StairsBlock(String name) {
+    StairsBlock(String name)
+    {
         this.name = name;
     }
 
-    public static String from(Material stair) {
-        for (StairsBlock stairs : values()) {
-            if (stairs.getName().equalsIgnoreCase(stair.name())) {
+    public static String from(Material stair)
+    {
+        for (StairsBlock stairs : values())
+        {
+            if (stairs.getName().equalsIgnoreCase(stair.name()))
+            {
                 return stairs.getName();
             }
         }
         return "null";
     }
 
-    public String getName() {
+    public String getName()
+    {
         return name;
     }
 

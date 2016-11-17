@@ -1,7 +1,6 @@
 /*
  * Copyright (c) BlackScarx
  */
-
 package net.blackscarx.betterchairs.Files;
 
 import net.blackscarx.betterchairs.ChairsPlugin;
@@ -11,21 +10,25 @@ import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 
-public class Messages {
+public class Messages
+{
 
     private static FileConfiguration messages = null;
     private static File messagesFile = null;
     private static Plugin plugin = ChairsPlugin.getPlugin(ChairsPlugin.class);
 
-    public static void init() {
+    public static void init()
+    {
         reload();
         check();
         load();
         reload();
     }
 
-    private static void load() {
+    private static void load()
+    {
         String header = "BlackScarx All right reserved\n";
         getConfig().options().header(header);
         getConfig().addDefault("Cant use message", "&cYou don't have permission for that");
@@ -39,51 +42,68 @@ public class Messages {
         save();
     }
 
-    private static void check() {
-        if (Config.getConfig().contains("Cant use message")) {
+    private static void check()
+    {
+        if (Config.getConfig().contains("Cant use message"))
+        {
             getConfig().set("Cant use message", Config.getConfig().getString("Cant use message", "&cYou don't have permission for that"));
             Config.getConfig().set("Cant use message", null);
         }
-        if (Config.getConfig().contains("Message to send when player toggle chairs to off")) {
+        if (Config.getConfig().contains("Message to send when player toggle chairs to off"))
+        {
             getConfig().set("Message to send when player toggle chairs to off", Config.getConfig().getString("Message to send when player toggle chairs to off", "&cYou can't sit now"));
             Config.getConfig().set("Message to send when player toggle chairs to off", null);
         }
-        if (Config.getConfig().contains("Message to send when player toggle chairs to on")) {
+        if (Config.getConfig().contains("Message to send when player toggle chairs to on"))
+        {
             getConfig().set("Message to send when player toggle chairs to on", Config.getConfig().getString("Message to send when player toggle chairs to on", "&aYou can sit now"));
             Config.getConfig().set("Message to send when player toggle chairs to on", null);
         }
-        if (Config.getConfig().contains("Message to send when player sit")) {
+        if (Config.getConfig().contains("Message to send when player sit"))
+        {
             getConfig().set("Message to send when player sit", Config.getConfig().getString("Message to send when player sit", "&aYou are now sitting. Take a break."));
             Config.getConfig().set("Message to send when player sit", null);
         }
-        if (Config.getConfig().contains("Message to send if the word is disable")) {
+        if (Config.getConfig().contains("Message to send if the word is disable"))
+        {
             getConfig().set("Message to send if the word is disable", Config.getConfig().getString("Message to send if the word is disable", "&cThe Chairs is not enable in this world"));
             Config.getConfig().set("Message to send if the word is disable", null);
         }
         Config.save();
     }
 
-    public static void reload() {
-        if (messagesFile == null) {
+    public static void reload()
+    {
+        if (messagesFile == null)
+        {
             messagesFile = new File(plugin.getDataFolder(), "messages.yml");
         }
         messages = YamlConfiguration.loadConfiguration(messagesFile);
     }
 
-    public static FileConfiguration getConfig() {
-        if (messages == null) reload();
+    public static FileConfiguration getConfig()
+    {
+        if (messages == null)
+        {
+            reload();
+        }
         return messages;
     }
 
-    public static void save() {
-        if (messages == null || messagesFile == null) {
+    public static void save()
+    {
+        if (messages == null || messagesFile == null)
+        {
             return;
         }
 
-        try {
+        try
+        {
             messages.save(messagesFile);
-        } catch (IOException ex) {
-            plugin.getLogger().severe("Could not save messages.yml to " + messagesFile.getAbsolutePath());
+        }
+        catch (IOException ex)
+        {
+            plugin.getLogger().log(Level.SEVERE, "Could not save messages.yml to {0}", messagesFile.getAbsolutePath());
             ex.printStackTrace();
         }
     }
